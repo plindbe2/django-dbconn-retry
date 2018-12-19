@@ -56,7 +56,7 @@ def monkeypatch_django() -> None:
                     if isinstance(e, _operror_types):
                         if not hasattr(self, "_connection_retries"):
                             self._connection_retries = 0
-                        if self._connection_retries >= self.settings_dict.get("MAX_RETRIES", 1):
+                        if self._connection_retries >= self.settings_dict.get("MAX_RETRIES", 0):
                             _log.error("Reconnecting to the database didn't help %s", str(e))
                             del self._in_connecting
                             post_reconnect.send(self.__class__, dbwrapper=self)
