@@ -60,7 +60,7 @@ def monkeypatch_django() -> None:
                             _log.error("Reconnecting to the database didn't help %s", str(e))
                             del self._in_connecting
                             post_reconnect.send(self.__class__, dbwrapper=self,
-                                                retry_count=dbwrapper._connection_retries)
+                                                retry_count=self._connection_retries)
                             raise
                         else:
                             if self._connection_retries > 0:
