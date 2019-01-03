@@ -14,7 +14,7 @@ _log = logging.getLogger(__name__)
 default_app_config = 'django_dbconn_retry.DjangoIntegration'
 
 pre_reconnect = Signal(providing_args=["dbwrapper"])
-post_reconnect = Signal(providing_args=["dbwrapper"])
+post_reconnect = Signal(providing_args=["dbwrapper", "retry_count"])
 
 
 _operror_types = ()  # type: Union[Tuple[type], Tuple]
@@ -59,7 +59,8 @@ def monkeypatch_django() -> None:
                         if self._connection_retries >= self.settings_dict.get("DBCONN_RETRY_MAX_RETRIES", 0):
                             _log.error("Reconnecting to the database didn't help %s", str(e))
                             del self._in_connecting
-                            post_reconnect.send(self.__class__, dbwrapper=self)
+                            post_reconnect.send(self.__class__, dbwrapper=self,
+                                                retry_count=self._connection_retries)
                             raise
                         else:
                             if self._connection_retries > 0:
@@ -73,10 +74,11 @@ def monkeypatch_django() -> None:
                             self.connection = None
                             del self._in_connecting
 
+                            retry_count = self._connection_retries
                             # give libraries like 12factor-vault the chance to update the credentials
                             pre_reconnect.send(self.__class__, dbwrapper=self)
                             self.ensure_connection()
-                            post_reconnect.send(self.__class__, dbwrapper=self)
+                            post_reconnect.send(self.__class__, dbwrapper=self, retry_count=retry_count))
                     else:
                         _log.debug("Database connection failed, but not due to a known error for dbconn_retry %s",
                                    str(e))
