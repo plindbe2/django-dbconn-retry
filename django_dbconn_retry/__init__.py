@@ -78,7 +78,7 @@ def monkeypatch_django() -> None:
                             # give libraries like 12factor-vault the chance to update the credentials
                             pre_reconnect.send(self.__class__, dbwrapper=self)
                             self.ensure_connection()
-                            post_reconnect.send(self.__class__, dbwrapper=self, retry_count=retry_count))
+                            post_reconnect.send(self.__class__, dbwrapper=self, retry_count=retry_count)
                     else:
                         _log.debug("Database connection failed, but not due to a known error for dbconn_retry %s",
                                    str(e))
